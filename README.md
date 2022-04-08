@@ -20,7 +20,7 @@ In the root of your application:
    }
    ```
    Note: Include dependencies and dev dependencies
-2. Run `deno run -A --no-check --reload https://deno.land/npm_bridge/main.ts`
+2. Run `deno run -A --no-check --reload https://deno.land/x/npm_bridge/main.ts`
 
 ### Step 2: Use dependencies
 
