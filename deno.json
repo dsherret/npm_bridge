@@ -1,0 +1,5 @@
+{
+  "tasks": {
+    "build:rust": "cd rust && deno run -A --unstable https://raw.githubusercontent.com/denoland/wasmbuild/main/main.ts"
+  }
+}
