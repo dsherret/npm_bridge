@@ -14,12 +14,11 @@ In the root of your application:
 1. Define your dependencies in a `npm_deps.json`
    ```json
    {
-     "npmDependencies": {
+     "dependencies": {
        "ts-morph": "^14.0.0"
      }
    }
    ```
-   Note: Include dependencies and dev dependencies
 2. Run `deno run -A --no-check --reload https://deno.land/x/npm_bridge/main.ts`
 
 ### Step 2: Use dependencies

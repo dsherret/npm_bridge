@@ -14,5 +14,6 @@ Deno.test("should create", async () => {
     dependencies: {
       "code-block-writer": "^11.0.0",
     },
+    devDependencies: {},
   });
 });

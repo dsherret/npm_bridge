@@ -9,6 +9,7 @@ const depsFile = await readDepsFile("./npm_deps.json");
 npmInstall({
   outDir: "./npm_deps",
   dependencies: depsFile.dependencies,
+  devDependencies: depsFile.devDependencies,
 });
 
 async function readDepsFile(filePath: string) {
@@ -17,7 +18,8 @@ async function readDepsFile(filePath: string) {
     const jsonObj = JSON.parse(depsFileText);
 
     return {
-      dependencies: parseDependencies(jsonObj),
+      dependencies: parseDependencies(jsonObj.dependencies),
+      devDependencies: parseDependencies(jsonObj.devDependencies),
     };
   } catch (err) {
     const newErr = new Error(
@@ -27,16 +29,17 @@ async function readDepsFile(filePath: string) {
     throw newErr;
   }
 
-  function parseDependencies(jsonObj: any) {
-    if (typeof jsonObj.npmDependencies !== "object") {
-      throw new Error("Exepcted a 'npmDependencies' object.");
-    }
+  function parseDependencies(jsonDeps: any) {
     const dependencies: { [name: string]: string } = {};
-    for (const [key, value] of Object.entries(jsonObj.npmDependencies)) {
-      if (typeof value !== "string") {
-        throw new Error(`The type of the ${key} dependency must be an object.`);
+    if (typeof jsonDeps === "object") {
+      for (const [key, value] of Object.entries(jsonDeps)) {
+        if (typeof value !== "string") {
+          throw new Error(
+            `The type of the ${key} dependency must be an object.`,
+          );
+        }
+        dependencies[key] = value;
       }
-      dependencies[key] = value;
     }
     return dependencies;
   }

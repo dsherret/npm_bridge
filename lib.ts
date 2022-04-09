@@ -11,6 +11,7 @@ import { DenoJson } from "./deno_json.ts";
 export interface NpmInstallOptions {
   outDir: string;
   dependencies: { [name: string]: string };
+  devDependencies: { [name: string]: string };
 }
 
 export async function npmInstall(options: NpmInstallOptions) {
@@ -37,6 +38,7 @@ export async function npmInstall(options: NpmInstallOptions) {
       version: "0.0.0",
       private: true,
       dependencies: options.dependencies,
+      devDependencies: options.devDependencies,
     }),
   );
 
