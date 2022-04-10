@@ -2,6 +2,7 @@
 
 import { path } from "./deps.ts";
 import { readDirs } from "./utils/fs.ts";
+import { hasScriptExtension } from "./utils/path.ts";
 
 export interface NodeModule {
   name: string;
@@ -62,11 +63,7 @@ export async function collectNodeModules(nodeModulesPath: string) {
           if (entry.isDirectory) {
             await fillInDir(path.join(dirPath, entry.name));
           } else if (entry.isFile) {
-            const ext = path.extname(entry.name).toLowerCase();
-            if (
-              ext === ".ts" || ext === ".js" || ext === ".cjs" ||
-              ext === " .mjs"
-            ) {
+            if (hasScriptExtension(entry.name)) {
               scriptFiles.push(path.join(dirPath, entry.name));
             }
           }

@@ -5,8 +5,10 @@ import { runCommandWithOutput } from "./command.ts";
 import { analyzeCjsExports, CjsAnalysis } from "./rust/mod.ts";
 import { collectNodeModules, NodeModule } from "./analyze.ts";
 import { ImportMapBuilder } from "./import_map.ts";
-import { stripRelative } from "./utils/string.ts";
+import { stripRelative } from "./utils/path.ts";
 import { DenoJson } from "./deno_json.ts";
+import { getJsScriptInDirWithPrefix } from "./utils/fs.ts";
+import { hasScriptExtension } from "./utils/path.ts";
 
 export interface NpmInstallOptions {
   outDir: string;
@@ -73,14 +75,29 @@ export async function npmInstall(options: NpmInstallOptions) {
     console.error(`Analyzing ${nodeModule.name}...`);
     const packageJson = nodeModule.packageJson;
     // todo: handle exports and module properties
-    if (packageJson.main == null) {
-      throw new Error("Not implemented: no main");
+    let main = packageJson.main;
+    if (main == null) {
+      main = await getJsScriptInDirWithPrefix(
+        nodeModule.nodeModulesPath,
+        "index",
+      );
+      if (main == null) {
+        throw new Error("Not implemented: no main");
+      }
+    }
+    if (!hasScriptExtension(main)) {
+      main = await getJsScriptInDirWithPrefix(nodeModule.nodeModulesPath, main);
+      if (main == null) {
+        throw new Error(
+          `Could not find main file with filename: ${packageJson.main}`,
+        );
+      }
     }
     const types = packageJson.typings ?? packageJson.types;
     const mainFilePath = path.join(
       nodeModulesPath,
       packageJson.name,
-      packageJson.main,
+      main,
     );
     let nodeModulesSpecifier: string;
     if (packageJson.name.includes("/")) {
@@ -120,7 +137,7 @@ export async function npmInstall(options: NpmInstallOptions) {
     await createEsmEntrypoint(
       packageJson.name,
       mainCjsExports,
-      `./${packageJson.name}/${stripRelative(packageJson.main)}`,
+      `./${packageJson.name}/${stripRelative(main)}`,
     );
   }
 
