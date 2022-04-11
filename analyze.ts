@@ -12,6 +12,7 @@ export interface NodeModule {
     types: string | undefined;
     typings: string | undefined;
     main: string | undefined;
+    bin: { [name: string]: string } | string | undefined;
     dependencies?: {
       [name: string]: string;
     };

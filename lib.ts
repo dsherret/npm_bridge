@@ -139,6 +139,43 @@ export async function npmInstall(options: NpmInstallOptions) {
       mainCjsExports,
       `./${packageJson.name}/${stripRelative(main)}`,
     );
+
+    await handleBin(nodeModule);
+  }
+
+  async function handleBin(nodeModule: NodeModule) {
+    if (nodeModule.packageJson.bin == null) {
+      return;
+    }
+
+    if (typeof nodeModule.packageJson.bin === "string") {
+      await addBinForNameAndSpecifier(
+        nodeModule.packageJson.name,
+        nodeModule.packageJson.bin,
+      );
+    } else {
+      for (const [key, value] of Object.entries(nodeModule.packageJson.bin)) {
+        if (typeof value !== "string") {
+          continue;
+        }
+        await addBinForNameAndSpecifier(key, value);
+      }
+    }
+
+    async function addBinForNameAndSpecifier(name: string, specifier: string) {
+      let source =
+        `import { createRequire } from "https://deno.land/std@0.132.0/node/module.ts";\n` +
+        `const require = createRequire(import.meta.url);\n` +
+        `require("./node_modules/${nodeModule.packageJson.name}/${
+          stripRelative(specifier)
+        }");\n`;
+
+      await Deno.writeTextFile(
+        // todo: check for conflicts by keeping a list
+        path.join(options.outDir, name + ".bin.ts"),
+        source,
+      );
+    }
   }
 
   async function createEsmEntrypoint(
