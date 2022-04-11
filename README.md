@@ -31,7 +31,7 @@ Now run these commands similarly to as you would with npm:
    - Alternatively: `deno task npm i <package-name>`
    - For dev dependency: `deno task npm i --save-dev <package-name>`
 
-### Step 2: Use dependencies
+### Step 3: Use dependencies
 
 1. Import and use the package via a bare specifier.
 
