@@ -1,8 +1,8 @@
 // Copyright 2018-2022 the Deno authors. All rights reserved. MIT license.
 
-import { path } from "./deps.ts";
-import { readDirs } from "./utils/fs.ts";
-import { hasScriptExtension } from "./utils/path.ts";
+import { path } from "../deps.ts";
+import { readDirs } from "../utils/fs.ts";
+import { hasScriptExtension } from "../utils/path.ts";
 
 export interface NodeModule {
   name: string;

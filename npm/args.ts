@@ -1,4 +1,4 @@
-import * as flags from "https://deno.land/std@0.132.0/flags/mod.ts";
+import { flags } from "../deps.cli.ts";
 
 export type Command =
   | HelpCommand
@@ -38,7 +38,7 @@ export function parseArgs(rawArgs: string[]): Command {
     case "i":
     case "install": {
       if (typeof args._[1] === "string") {
-        if (args["save-dev"] || args["D"] || args["dev"]) {
+        if (args["save-dev"] || args["D"]) {
           return {
             kind: "install-dev-dep",
             name: args._[1],

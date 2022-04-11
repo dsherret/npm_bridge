@@ -9,26 +9,33 @@ Works similarly to using npm in Node.
 
 ### Step 1: Setup
 
-In the root of your application:
+In the root of your application, create a deno.json file and add a `npm` & `npx`
+task:
 
-1. Create a deno.json file and add a "npm" task:
-   ```json
-   {
-     "tasks": {
-       "npm": "deno run -A --no-check --reload https://deno.land/x/npm_bridge/main.ts"
-     }
-   }
-   ```
+```json
+{
+  "tasks": {
+    "npm": "deno run -A --no-check https://deno.land/x/npm_bridge@{VERSION}/npm.ts",
+    "npx": "deno run -A --no-check https://deno.land/x/npm_bridge@{VERSION}/npx.ts"
+  }
+}
+```
+
+### Step 2: Initialize
 
 Now run these commands similarly to as you would with npm:
 
-1. Run `deno task npm init` to initialize a _npm_deps.json_ file.
-1. Add dependencies (ex. `deno task npm install ts-morph`,
-   `deno task npm i --save-dev mkdirp`)
+1. `deno task npm init` - Initialize a _npm_deps.json_ file (similar to
+   _package.json_).
+1. `deno task npm install <package-name>` - Add a dependency.
+   - Alternatively: `deno task npm i <package-name>`
+   - For dev dependency: `deno task npm i --save-dev <package-name>`
 
 ### Step 2: Use dependencies
 
-1. Import and use the package via a bare specifier:
+1. Import and use the package via a bare specifier.
+
+   For example, if we did `deno task npm i ts-morph` above:
    ```ts
    // main.ts
    import { Project } from "ts-morph";
@@ -44,24 +51,15 @@ Now run these commands similarly to as you would with npm:
 
 #### Use Binary Dependencies
 
-To use a binary dependency, create a new entry in your deno.json that references
-the `./npm_deps/<package-name>.bin.js` file:
+To use a binary dependency, run `deno task npx <binary-name>`.
 
-```jsonc
-{
-  "tasks": {
-    // ...
-    "mkdirp": "deno run -A --unstable ./npm_deps/mkdirp.bin.js"
-  }
-  // ...
-}
-```
-
-Now try it out:
+For example:
 
 ```shell
-deno task mkdirp subdir/newdir
+deno task npx --allow-write=. mkdirp subdir/newdir
 ```
+
+You may wish to alias these in another deno task.
 
 ## What this does
 
@@ -89,3 +87,7 @@ Adds a package to the _npm_deps.json_ `dependencies` and installs it.
 ### `deno task npm install --save-dev <package-name>`
 
 Adds a package to the _npm_deps.json_ `devDependencies` and installs it.
+
+### `deno task npx <...deno-args> <sub-command> <...sub-command-args>`
+
+For running a sub command.

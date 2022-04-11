@@ -1,6 +1,6 @@
 // Copyright 2018-2022 the Deno authors. All rights reserved. MIT license.
 
-import { stripRelative } from "./utils/path.ts";
+import { stripRelative } from "../utils/path.ts";
 
 export class ImportMapBuilder {
   #imports: { [name: string]: string } = {};

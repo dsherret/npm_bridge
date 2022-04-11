@@ -1,9 +1,9 @@
 // Copyright 2018-2022 the Deno authors. All rights reserved. MIT license.
 
+import { parseArgs } from "./npm/args.ts";
+import { getPackageInstallVersion } from "./npm/npm_api.ts";
+import { DepsFile } from "./repo/deps_file.ts";
 import { npmInstall } from "./lib.ts";
-import { parseArgs } from "./args.ts";
-import { DepsFile } from "./deps_file.ts";
-import { getPackageInstallVersion } from "./npm_api.ts";
 
 const args = parseArgs(Deno.args);
 

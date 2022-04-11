@@ -1,14 +1,13 @@
 // Copyright 2018-2022 the Deno authors. All rights reserved. MIT license.
 
-import { path } from "./deps.ts";
-import { runCommandWithOutput } from "./command.ts";
+import { runCommandWithOutput } from "./utils/command.ts";
 import { analyzeCjsExports, CjsAnalysis } from "./rust/mod.ts";
-import { collectNodeModules, NodeModule } from "./analyze.ts";
-import { ImportMapBuilder } from "./import_map.ts";
-import { stripRelative } from "./utils/path.ts";
-import { DenoJson } from "./deno_json.ts";
+import { collectNodeModules, NodeModule } from "./npm/analyze.ts";
+import { ImportMapBuilder } from "./repo/import_map.ts";
+import { DenoJson } from "./repo/deno_json.ts";
 import { getJsScriptInDirWithPrefix } from "./utils/fs.ts";
-import { hasScriptExtension } from "./utils/path.ts";
+import { hasScriptExtension, stripRelative } from "./utils/path.ts";
+import { path } from "./deps.ts";
 
 export interface NpmInstallOptions {
   outDir: string;
@@ -25,6 +24,7 @@ export async function npmInstall(options: NpmInstallOptions) {
   const importMap = new ImportMapBuilder();
   const npmPackageJsonFilePath = path.join(options.outDir, "package.json");
   const nodeModulesPath = path.join(options.outDir, "node_modules");
+  const binPath = path.join(options.outDir, ".bin");
 
   try {
     await Deno.remove(nodeModulesPath, { recursive: true });
@@ -33,6 +33,7 @@ export async function npmInstall(options: NpmInstallOptions) {
   }
 
   await Deno.mkdir(options.outDir, { recursive: true });
+  await Deno.mkdir(binPath, { recursive: true });
   await Deno.writeTextFile(
     npmPackageJsonFilePath,
     JSON.stringify({
@@ -166,13 +167,13 @@ export async function npmInstall(options: NpmInstallOptions) {
       let source =
         `import { createRequire } from "https://deno.land/std@0.132.0/node/module.ts";\n` +
         `const require = createRequire(import.meta.url);\n` +
-        `require("./node_modules/${nodeModule.packageJson.name}/${
+        `require("../node_modules/${nodeModule.packageJson.name}/${
           stripRelative(specifier)
         }");\n`;
 
       await Deno.writeTextFile(
         // todo: check for conflicts by keeping a list
-        path.join(options.outDir, name + ".bin.js"),
+        path.join(binPath, name + ".js"),
         source,
       );
     }
