@@ -11,18 +11,6 @@ export async function* readDirs(dirPath: string) {
   }
 }
 
-export async function pathExists(fileOrDirPath: string) {
-  try {
-    await Deno.stat(fileOrDirPath);
-    return true;
-  } catch (err) {
-    if (err instanceof Deno.errors.NotFound) {
-      return false;
-    }
-    throw err;
-  }
-}
-
 export async function getJsScriptInDirWithPrefix(
   dirPath: string,
   fileNameNoExt: string,

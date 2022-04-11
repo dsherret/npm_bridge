@@ -172,7 +172,7 @@ export async function npmInstall(options: NpmInstallOptions) {
 
       await Deno.writeTextFile(
         // todo: check for conflicts by keeping a list
-        path.join(options.outDir, name + ".bin.ts"),
+        path.join(options.outDir, name + ".bin.js"),
         source,
       );
     }

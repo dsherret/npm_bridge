@@ -7,19 +7,24 @@ Proof of concept for a bridge between Deno and npm packages.
 
 Works similarly to using npm in Node.
 
-### Step 1: Setup - Install dependencies
+### Step 1: Setup
 
 In the root of your application:
 
-1. Define your dependencies in a `npm_deps.json`
+1. Create a deno.json file and add a "npm" task:
    ```json
    {
-     "dependencies": {
-       "ts-morph": "^14.0.0"
+     "tasks": {
+       "npm": "deno run -A --no-check --reload https://deno.land/x/npm_bridge/main.ts"
      }
    }
    ```
-2. Run `deno run -A --no-check --reload https://deno.land/x/npm_bridge/main.ts`
+
+Now run these commands similarly to as you would with npm:
+
+1. Run `deno task npm init` to initialize a _npm_deps.json_ file.
+1. Add dependencies (ex. `deno task npm install ts-morph`,
+   `deno task npm i --save-dev mkdirp`)
 
 ### Step 2: Use dependencies
 
@@ -37,11 +42,50 @@ In the root of your application:
    deno run --allow-read --allow-env --unstable main.ts
    ```
 
+#### Use Binary Dependencies
+
+To use a binary dependency, create a new entry in your deno.json that references
+the `./npm_deps/<package-name>.bin.js` file:
+
+```jsonc
+{
+  "tasks": {
+    // ...
+    "mkdirp": "deno run -A --unstable ./npm_deps/mkdirp.bin.js"
+  }
+  // ...
+}
+```
+
+Now try it out:
+
+```shell
+deno task mkdirp subdir/newdir
+```
+
 ## What this does
 
 1. Runs `npm install` with the dependencies you specified.
-2. Analyzes the `node_modules` folder and creates wrapper ESM modules around the
+1. Analyzes the `node_modules` folder and creates wrapper ESM modules around the
    CJS code.
-3. Creates an import map to map bare specifiers to the wrapper ESM modules and
+1. Creates an import map to map bare specifiers to the wrapper ESM modules and
    to map import specifiers with no extensions to extensions.
-4. Updates or adds the import map to your _deno.json_ file.
+1. Updates or adds the import map to your _deno.json_ file.
+
+## Subcommands
+
+### `deno task npm init`
+
+Initializes a _npm_deps.json_ file.
+
+### `deno task npm install`
+
+Installs the packages specified in _npm_deps.json_ into a _npm_deps_ folder.
+
+### `deno task npm install <package-name>`
+
+Adds a package to the _npm_deps.json_ `dependencies` and installs it.
+
+### `deno task npm install --save-dev <package-name>`
+
+Adds a package to the _npm_deps.json_ `devDependencies` and installs it.

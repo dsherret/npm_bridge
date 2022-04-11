@@ -1,46 +1,53 @@
 // Copyright 2018-2022 the Deno authors. All rights reserved. MIT license.
 
 import { npmInstall } from "./lib.ts";
-import { flags } from "./deps.ts";
+import { parseArgs } from "./args.ts";
+import { DepsFile } from "./deps_file.ts";
+import { getPackageInstallVersion } from "./npm_api.ts";
 
-const args = flags.parse(Deno.args); // todo... use this
-const depsFile = await readDepsFile("./npm_deps.json");
+const args = parseArgs(Deno.args);
 
-npmInstall({
-  outDir: "./npm_deps",
-  dependencies: depsFile.dependencies,
-  devDependencies: depsFile.devDependencies,
-});
-
-async function readDepsFile(filePath: string) {
-  try {
-    const depsFileText = await Deno.readTextFile(filePath);
-    const jsonObj = JSON.parse(depsFileText);
-
-    return {
-      dependencies: parseDependencies(jsonObj.dependencies),
-      devDependencies: parseDependencies(jsonObj.devDependencies),
-    };
-  } catch (err) {
-    const newErr = new Error(
-      `Error reading configuration file at '${filePath}'`,
-    );
-    newErr.cause = err;
-    throw newErr;
+switch (args.kind) {
+  case "init": {
+    const depsFile = new DepsFile();
+    await depsFile.save();
+    console.log("Created npm_deps.json");
+    break;
   }
-
-  function parseDependencies(jsonDeps: any) {
-    const dependencies: { [name: string]: string } = {};
-    if (typeof jsonDeps === "object") {
-      for (const [key, value] of Object.entries(jsonDeps)) {
-        if (typeof value !== "string") {
-          throw new Error(
-            `The type of the ${key} dependency must be an object.`,
-          );
-        }
-        dependencies[key] = value;
-      }
-    }
-    return dependencies;
+  case "install": {
+    await installWithDepsFile(new DepsFile());
+    break;
   }
+  case "install-dep": {
+    const depsFile = new DepsFile();
+    const installVersion = await getPackageInstallVersion(args.name);
+    depsFile.addDependency(args.name, `^${installVersion}`);
+    await depsFile.save();
+    await installWithDepsFile(depsFile);
+    break;
+  }
+  case "install-dev-dep": {
+    const depsFile = new DepsFile();
+    const installVersion = await getPackageInstallVersion(args.name);
+    depsFile.addDevDependency(args.name, `^${installVersion}`);
+    await depsFile.save();
+    await installWithDepsFile(depsFile);
+    break;
+  }
+  case "help": {
+    console.log("Todo...");
+    break;
+  }
+  default: {
+    const _assertNever: never = args;
+    throw new Error("Unreachable");
+  }
+}
+
+async function installWithDepsFile(depsFile: DepsFile) {
+  await npmInstall({
+    outDir: "./npm_deps",
+    dependencies: depsFile.getDependencies(),
+    devDependencies: depsFile.getDevDependencies(),
+  });
 }
