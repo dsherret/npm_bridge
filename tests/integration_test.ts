@@ -3,16 +3,18 @@
 import { npmInstall } from "../lib.ts";
 import { path } from "../deps.ts";
 
-const outDir = path.join(
+const testDir = path.join(
   path.dirname(path.fromFileUrl(import.meta.url)),
-  "./npm_deps",
+  "./output",
 );
 
 Deno.test("should create", async () => {
+  Deno.mkdirSync(testDir, { recursive: true });
+  Deno.chdir(testDir);
   await npmInstall({
-    outDir,
+    outDir: path.join(testDir, "./npm_deps"),
     dependencies: {
-      "code-block-writer": "^11.0.0",
+      "code-block-writer": "^11.0.1",
     },
     devDependencies: {},
   });

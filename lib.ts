@@ -89,30 +89,29 @@ export async function npmInstall(options: NpmInstallOptions) {
     if (!hasScriptExtension(main)) {
       main = await getJsScriptInDirWithPrefix(nodeModule.nodeModulesPath, main);
       if (main == null) {
-        throw new Error(
-          `Could not find main file with filename: ${packageJson.main}`,
-        );
+        return;
       }
     }
-    const types = packageJson.typings ?? packageJson.types;
+
     const mainFilePath = path.join(
       nodeModulesPath,
       packageJson.name,
       main,
     );
-    let nodeModulesSpecifier: string;
+    const nodeModulesSpecifier = getNodeModulesSpecifier(nodeModule);
     if (packageJson.name.includes("/")) {
       await Deno.mkdir(
         path.dirname(path.join(options.outDir, packageJson.name)),
         { recursive: true },
       );
-      nodeModulesSpecifier = "../node_modules";
-    } else {
-      nodeModulesSpecifier = "./node_modules";
     }
-    const typesSpecifier = types == null
-      ? undefined
-      : `${nodeModulesSpecifier}/${packageJson.name}/${stripRelative(types)}`;
+    const typesModule = nodeModules.find((m) =>
+      m.name === `@types/${nodeModule.name}`
+    );
+    const typesSpecifier = getTypesSpecifierForModule(nodeModule, nodeModule) ??
+      (typesModule == null
+        ? undefined
+        : getTypesSpecifierForModule(typesModule, nodeModule));
     await Deno.writeTextFile(
       path.join(options.outDir, packageJson.name + ".ts"),
       (typesSpecifier == null ? "" : `// @deno-types="${typesSpecifier}"\n`) +
@@ -131,7 +130,7 @@ export async function npmInstall(options: NpmInstallOptions) {
       ...nodeModule.scriptFiles.map((f) => path.relative(options.outDir, f)),
     );
 
-    const mainCjsExports = analyzeCjsExports(
+    const mainCjsExports = await analyzeCjsExports(
       await Deno.readTextFile(mainFilePath),
     );
 
@@ -142,6 +141,28 @@ export async function npmInstall(options: NpmInstallOptions) {
     );
 
     await handleBin(nodeModule);
+  }
+
+  function getTypesSpecifierForModule(
+    nodeModule: NodeModule,
+    rootModule: NodeModule,
+  ) {
+    const packageJson = nodeModule.packageJson;
+    const types = packageJson.typings ?? packageJson.types;
+
+    return types == null
+      ? undefined
+      : `${getNodeModulesSpecifier(rootModule)}/${packageJson.name}/${
+        stripRelative(types)
+      }`;
+  }
+
+  function getNodeModulesSpecifier(nodeModule: NodeModule) {
+    if (nodeModule.packageJson.name.includes("/")) {
+      return "../node_modules";
+    } else {
+      return "./node_modules";
+    }
   }
 
   async function handleBin(nodeModule: NodeModule) {

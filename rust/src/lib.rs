@@ -21,12 +21,12 @@ pub fn analyze_cjs_exports(file_text: &str) -> Result<JsValue, JsValue> {
   let parsed_source = parse_script(ParseParams {
     specifier: "file:///my_file.js".to_string(),
     media_type: MediaType::Cjs,
-    source: source_text_info,
+    text_info: source_text_info,
     capture_tokens: true,
     maybe_syntax: None,
     scope_analysis: false,
   })
-  .map_err(|err| format!("{:?}", err))?;
+  .map_err(|err| format!("{:#}", err))?;
 
   let result = parsed_source.analyze_cjs();
   Ok(

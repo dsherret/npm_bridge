@@ -10,7 +10,7 @@ default = ["console_error_panic_hook"]
 crate-type = ["cdylib"]
 
 [dependencies]
-deno_ast = { version = "0.13.2", features = ["cjs"] }
-wasm-bindgen = { version = "0.2.79", features = ["serde-serialize"] }
+deno_ast = { version = "0.16.0", features = ["cjs"] }
+wasm-bindgen = { version = "0.2.81", features = ["serde-serialize"] }
 serde = { version = "1.0", features = ["derive"] }
 console_error_panic_hook = { version = "0.1.6", optional = true }

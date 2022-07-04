@@ -1,10 +1,13 @@
-import * as generated from "./lib/rust.generated.js";
+import { instantiate } from "./lib/rust.generated.js";
 
 export interface CjsAnalysis {
   exports: string[];
   reexports: string[];
 }
 
-export function analyzeCjsExports(fileText: string): CjsAnalysis {
-  return generated.analyzeCjsExports(fileText);
+export async function analyzeCjsExports(
+  fileText: string,
+): Promise<CjsAnalysis> {
+  const { analyzeCjsExports } = await instantiate();
+  return analyzeCjsExports(fileText);
 }
